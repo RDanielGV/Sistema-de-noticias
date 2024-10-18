@@ -1,24 +1,146 @@
 body {
-    background-color: #E9F1FA;
+    background: linear-gradient(to right, #ffffff, #a4e2b7); /* Degradado para el modo claro (blanco a verde) */
+    background-size: cover;
+    transition: background 1s ease, color 1s ease; /* Suaviza la transición con más duración */
+}
+
+.dark-mode {
+    background: linear-gradient(to right, #4B0082, #000000); /* Degradado morado a negro para el modo oscuro */
+    color: white;
+    transition: background 1s ease, color 1s ease; /* Suaviza la transición para el modo oscuro */
 }
 
 h1 {
-    color: #00ABE4;
+    color: #007B55;
 }
 
 .card {
-    transition: transform 0.2s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
 }
 
 .card:hover {
     transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-img-top {
+    border-radius: 15px 15px 0 0;
+    height: 200px; /* Altura fija para las imágenes */
+    object-fit: cover; /* Para mantener la proporción de la imagen */
+}
+
+.card-body {
+    background-color: white;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode .card-body {
+    background-color: #444;
 }
 
 .btn-success {
-    background-color: #4CAF50;
+    background-color: #28a745; /* Verde */
+    border: none;
 }
 
 .btn-secondary {
     background-color: #007BFF;
     color: white;
+    border: none;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007B55;
+    border-color: #007B55;
+}
+
+.pagination .page-link {
+    color: #007BFF;
+}
+
+/* Estilos para el switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #007B55;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.sun-icon, .moon-icon {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 18px;
+}
+
+.sun-icon {
+    left: 10px;
+}
+
+.moon-icon {
+    right: 10px;
+}
+
+input:checked ~ .slider .sun-icon {
+    display: none;
+}
+
+input:checked ~ .slider .moon-icon {
+    display: block;
+}
+
+/* Animación para el selector de categorías */
+#category {
+    transition: transform 0.3s ease;
+}
+
+#category:focus {
+    transform: scale(1.05);
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
