@@ -1,129 +1,107 @@
-const apiKey = '03f127032b97464093dd754372d2d62e';  // Reemplaza con tu clave de NewsAPI
-const newsContainer = document.getElementById('news-container');
-const categorySelect = document.getElementById('category');
-const prevButton = document.getElementById('prev-page');
-const nextButton = document.getElementById('next-page');
-const searchInput = document.getElementById('search');
-const searchButton = document.getElementById('search-button');
-const resetButton = document.getElementById('reset-search');
+const apiKey = '327b70c2db6418df97ab90b69666df61'; // Reemplaza con tu API key de GNews
+const corsProxy = 'https://thingproxy.freeboard.io/fetch/'; // Proxy para evitar problemas de CORS
 
-let currentPage = 1;
-const pageSize = 5;  // Noticias por página
-let totalResults = 0;
-let currentCategory = 'general';
-let searchTerm = '';  // Almacena la búsqueda por palabra clave
+document.addEventListener('DOMContentLoaded', () => {
+    const categorySelect = document.getElementById('category');
+    const searchInput = document.getElementById('search');
+    const searchButton = document.getElementById('search-button');
+    const resetButton = document.getElementById('reset-search');
 
-// Evento cuando se selecciona una nueva categoría
-categorySelect.addEventListener('change', () => {
-  currentCategory = categorySelect.value;
-  searchTerm = '';  // Limpiar el término de búsqueda cuando cambie la categoría
-  currentPage = 1;  // Reinicia la página al cambiar de categoría
-  resetButton.classList.remove('active');  // Oculta el botón de reset
-  fetchNews();
+    categorySelect.addEventListener('change', () => {
+        fetchNews(categorySelect.value);
+    });
+
+    searchButton.addEventListener('click', () => {
+        fetchNewsByKeyword(searchInput.value);
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            fetchNewsByKeyword(searchInput.value);
+        }
+    });
+
+    resetButton.addEventListener('click', () => {
+        searchInput.value = '';
+        fetchNews(categorySelect.value);
+    });
+
+    // Llamada inicial
+    fetchNews(categorySelect.value);
 });
 
-// Evento para ejecutar la búsqueda con el botón de búsqueda o al presionar Enter
-searchButton.addEventListener('click', () => performSearch());
+async function fetchNews(category) {
+    const url = `${corsProxy}https://gnews.io/api/v4/top-headlines?country=us&topic=${category}&token=${apiKey}`;
+    console.log("Fetching news from:", url);
+    try {
+        const response = await fetch(url);
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
 
-searchInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();  // Evitar el comportamiento por defecto del enter
-    performSearch();
-  }
-});
+        const data = await response.json();
+        console.log("Received data:", data);
 
-// Evento para resetear la búsqueda
-resetButton.addEventListener('click', () => {
-  searchInput.value = '';
-  searchTerm = '';
-  currentPage = 1;  // Volver a la página inicial
-  fetchNews();
-  resetButton.classList.remove('active');  // Ocultar el botón de reset
-});
+        if (data.articles && Array.isArray(data.articles)) {
+            displayNews(data.articles);
+        } else {
+            console.error("No se encontraron artículos.");
+            displayNews([]); // Llamar a displayNews con un array vacío
+        }
+    } catch (error) {
+        console.error("Error al obtener las noticias:", error);
+        displayNews([]); // Llamar a displayNews con un array vacío en caso de error
+    }
+}
 
-// Evento para botones de paginación
-prevButton.addEventListener('click', () => {
-  if (currentPage > 1) {
-    currentPage--;
-    fetchNews();
-  }
-});
+async function fetchNewsByKeyword(keyword) {
+    const url = `${corsProxy}https://gnews.io/api/v4/search?q=${keyword}&token=${apiKey}`;
+    console.log("Fetching news by keyword from:", url);
+    try {
+        const response = await fetch(url);
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
 
-nextButton.addEventListener('click', () => {
-  if (currentPage < Math.ceil(totalResults / pageSize)) {
-    currentPage++;
-    fetchNews();
-  }
-});
+        const data = await response.json();
+        console.log("Received data:", data);
 
-async function fetchNews() {
-  let url = `https://newsapi.org/v2/top-headlines?country=us&category=${currentCategory}&pageSize=${pageSize}&page=${currentPage}&apiKey=${apiKey}`;
-  
-  if (searchTerm) {
-    // Si hay un término de búsqueda, usa el endpoint de búsqueda
-    url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchTerm)}&pageSize=${pageSize}&page=${currentPage}&apiKey=${apiKey}`;
-  }
-
-  try {
-    newsContainer.classList.add('news-hidden');  // Añade clase para ocultar con animación
-    const response = await fetch(url);
-    const data = await response.json();
-    totalResults = data.totalResults;
-    displayNews(data.articles);
-    updatePagination();
-    setTimeout(() => {
-      newsContainer.classList.remove('news-hidden');  // Muestra las noticias con efecto
-    }, 300);  // Tiempo de la animación
-  } catch (error) {
-    console.error('Error al obtener las noticias:', error);
-    newsContainer.innerHTML = '<p>Error al obtener las noticias.</p>';
-  }
+        if (data.articles && Array.isArray(data.articles)) {
+            displayNews(data.articles);
+        } else {
+            console.error("No se encontraron artículos.");
+            displayNews([]); // Llamar a displayNews con un array vacío
+        }
+    } catch (error) {
+        console.error("Error al obtener las noticias:", error);
+        displayNews([]); // Llamar a displayNews con un array vacío en caso de error
+    }
 }
 
 function displayNews(articles) {
-  newsContainer.innerHTML = '';
-
-  if (articles.length === 0) {
-    newsContainer.innerHTML = '<p>No hay noticias disponibles.</p>';
-    return;
-  }
-
-  articles.forEach(article => {
-    const articleDiv = document.createElement('div');
-    articleDiv.classList.add('col-md-4', 'mb-4', 'article');
-
-    const articleImage = article.urlToImage
-      ? `<img src="${article.urlToImage}" alt="Imagen de la noticia" class="img-fluid rounded">`
-      : '';
-
-    articleDiv.innerHTML = `
-      <div class="card h-100">
-        ${articleImage}
-        <div class="card-body d-flex flex-column">
-          <h2 class="card-title">${article.title}</h2>
-          <p class="card-text">${article.description || 'Descripción no disponible.'}</p>
-          <a href="${article.url}" class="btn btn-primary mt-auto" target="_blank">Leer más</a>
-        </div>
-      </div>
-    `;
-
-    newsContainer.appendChild(articleDiv);
-  });
+    const newsContainer = document.getElementById('news-container');
+    newsContainer.innerHTML = ''; // Limpia el contenedor antes de agregar nuevas noticias
+    if (articles && articles.length) {
+        articles.forEach(article => {
+            const newsCard = `
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="${article.image || 'placeholder.jpg'}" class="card-img-top" alt="Imagen de la noticia">
+                        <div class="card-body">
+                            <h5 class="card-title">${article.title}</h5>
+                            <p class="card-text">${article.description || 'Sin descripción.'}</p>
+                            <a href="${article.url}" class="btn btn-primary" target="_blank">Leer más</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            newsContainer.innerHTML += newsCard;
+        });
+    } else {
+        newsContainer.innerHTML = '<p>No se encontraron noticias.</p>';
+    }
 }
-
-function updatePagination() {
-  prevButton.disabled = currentPage === 1;
-  nextButton.disabled = currentPage >= Math.ceil(totalResults / pageSize);
-}
-
-function performSearch() {
-  searchTerm = searchInput.value.trim();  // Obtiene la palabra clave del input
-  if (searchTerm) {
-    currentPage = 1;  // Reiniciar a la página 1 para la nueva búsqueda
-    fetchNews();
-    resetButton.classList.add('active');  // Mostrar el botón de reset después de una búsqueda
-  }
-}
-
-// Cargar noticias iniciales
-fetchNews();
