@@ -1,5 +1,4 @@
 const apiKey = '327b70c2db6418df97ab90b69666df61'; // Reemplaza con tu API key de GNews
-const corsProxy = 'https://thingproxy.freeboard.io/fetch/'; // Proxy para evitar problemas de CORS
 
 document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('category');
@@ -7,20 +6,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('search-button');
     const resetButton = document.getElementById('reset-search');
 
+    // Maneja el cambio de categoría
     categorySelect.addEventListener('change', () => {
         fetchNews(categorySelect.value);
     });
 
+    // Maneja la búsqueda al hacer clic en el botón de búsqueda
     searchButton.addEventListener('click', () => {
         fetchNewsByKeyword(searchInput.value);
     });
 
+    // Maneja la búsqueda al presionar Enter
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             fetchNewsByKeyword(searchInput.value);
         }
     });
 
+    // Reinicia la búsqueda
     resetButton.addEventListener('click', () => {
         searchInput.value = '';
         fetchNews(categorySelect.value);
@@ -30,58 +33,57 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchNews(categorySelect.value);
 });
 
+// Función para obtener noticias por categoría
 async function fetchNews(category) {
-    const url = `${corsProxy}https://gnews.io/api/v4/top-headlines?country=us&topic=${category}&token=${apiKey}`;
-    console.log("Fetching news from:", url);
+    const url = `https://gnews.io/api/v4/top-headlines?country=us&topic=${category}&token=${apiKey}`;
     try {
         const response = await fetch(url);
-        console.log("Response status:", response.status);
         
         if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Error: ${response.status} - ${response.statusText}. Detalles: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log("Received data:", data);
 
         if (data.articles && Array.isArray(data.articles)) {
             displayNews(data.articles);
         } else {
             console.error("No se encontraron artículos.");
-            displayNews([]); // Llamar a displayNews con un array vacío
+            displayNews([]);
         }
     } catch (error) {
         console.error("Error al obtener las noticias:", error);
-        displayNews([]); // Llamar a displayNews con un array vacío en caso de error
+        displayNews([]);
     }
 }
 
+// Función para obtener noticias por palabra clave
 async function fetchNewsByKeyword(keyword) {
-    const url = `${corsProxy}https://gnews.io/api/v4/search?q=${keyword}&token=${apiKey}`;
-    console.log("Fetching news by keyword from:", url);
+    const url = `https://gnews.io/api/v4/search?q=${keyword}&token=${apiKey}`;
     try {
         const response = await fetch(url);
-        console.log("Response status:", response.status);
         
         if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Error: ${response.status} - ${response.statusText}. Detalles: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log("Received data:", data);
 
         if (data.articles && Array.isArray(data.articles)) {
             displayNews(data.articles);
         } else {
             console.error("No se encontraron artículos.");
-            displayNews([]); // Llamar a displayNews con un array vacío
+            displayNews([]);
         }
     } catch (error) {
         console.error("Error al obtener las noticias:", error);
-        displayNews([]); // Llamar a displayNews con un array vacío en caso de error
+        displayNews([]);
     }
 }
 
+// Función para mostrar noticias
 function displayNews(articles) {
     const newsContainer = document.getElementById('news-container');
     newsContainer.innerHTML = ''; // Limpia el contenedor antes de agregar nuevas noticias
