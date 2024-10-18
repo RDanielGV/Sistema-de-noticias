@@ -37,7 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function fetchNews(category) {
-    const url = `https://gnews.io/api/v4/top-headlines?country=us&topic=${category}&token=${apiKey}`;
+    let url;
+    if (category === 'education') {
+        // Si la categoría seleccionada es "Educación", se usa una búsqueda por palabra clave
+        url = `https://gnews.io/api/v4/search?q=education&token=${apiKey}`;
+    } else {
+        // Para las demás categorías, se utiliza el endpoint estándar de categorías
+        url = `https://gnews.io/api/v4/top-headlines?country=us&topic=${category}&token=${apiKey}`;
+    }
+    
     try {
         const response = await fetch(url);
         if (!response.ok) {
