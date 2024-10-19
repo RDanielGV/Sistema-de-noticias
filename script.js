@@ -1,4 +1,4 @@
-const apiKey = '327b70c2db6418df97ab90b69666df61'; // Reemplaza con tu API key de GNews
+const apiKey = 'e09bae33a7695f812dcb80486d88ba94'; // Reemplaza con tu API key de GNews
 let articles = [];
 let currentPage = 1;
 const articlesPerPage = 12;
